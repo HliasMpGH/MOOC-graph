@@ -3,8 +3,8 @@ package gr.network.load;
 import org.neo4j.cypherdsl.core.*;
 import static org.neo4j.cypherdsl.core.Cypher.*;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,23 +26,23 @@ public class GraphLoader {
     private Connection connection;
 
     /** The user nodes to be loaded */
-    private List<String> users;
+    private Set<String> users;
 
     /** The course nodes to be loaded */
-    private List<String> courses;
+    private Set<String> courses;
 
     /** The action (user-course) edges to be loaded */
-    private List<Action> actions;
+    private Set<Action> actions;
 
-    public GraphLoader(List<String> users, List<String> courses, List<Action> actions) {
+    public GraphLoader(Set<String> users, Set<String> courses, Set<Action> actions) {
         // receive the graph to load
         this(users, courses, actions, new Connection());
     }
 
     public GraphLoader(
-        List<String> users,
-        List<String> courses,
-        List<Action> actions,
+        Set<String> users,
+        Set<String> courses,
+        Set<Action> actions,
         Connection connection
     ) {
         this.users = users;
@@ -96,7 +96,7 @@ public class GraphLoader {
      * @param nodeLabel The label of the nodes.
      * @return The cypher query to create the nodes.
      */
-    private String toCreateCypher(List<String> nodes, String nodeLabel) {
+    private String toCreateCypher(Set<String> nodes, String nodeLabel) {
         return Cypher.create(
                 nodes.stream()
                 .map(nodeId -> toNode(nodeLabel, nodeId))
@@ -126,20 +126,20 @@ public class GraphLoader {
         Node courseNode = node("Course").named("c");
 
         // define the match conditions
-        Condition userMatch = userNode.property("id").isEqualTo(literalOf(action.user()));
-        Condition courseMatch = courseNode.property("id").isEqualTo(literalOf(action.course()));
+        Condition userMatch = userNode.property("id").isEqualTo(literalOf(action.getUser()));
+        Condition courseMatch = courseNode.property("id").isEqualTo(literalOf(action.getCourse()));
 
         // define the edge properties
         Relationship relationship = userNode
-            .relationshipTo(courseNode, action.action())
+            .relationshipTo(courseNode, action.getAction())
             .named("r")
             .withProperties(Map.of(
-                "timestamp", literalOf(action.timestamp()),
-                "feature0", literalOf(action.feature0()),
-                "feature1", literalOf(action.feature1()),
-                "feature2", literalOf(action.feature2()),
-                "feature3", literalOf(action.feature3()),
-                "label", literalOf(action.label())
+                "timestamp", literalOf(action.getTimestamp()),
+                "feature0", literalOf(action.getFeature0()),
+                "feature1", literalOf(action.getFeature1()),
+                "feature2", literalOf(action.getFeature2()),
+                "feature3", literalOf(action.getFeature3()),
+                "label", literalOf(action.getLabel())
             ));
 
         // create the cypher query
