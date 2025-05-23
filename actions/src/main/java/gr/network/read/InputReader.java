@@ -20,12 +20,18 @@ import gr.network.domain.Action;
  * @version 1.0
  */
 public class InputReader {
+    private String fileName;
 
     private Set<Action> actions;
     private Set<String> userIds;
     private Set<String> courseIds;
 
     public InputReader() throws Exception {
+        this("mooc_actions_merged.csv");
+    }
+
+    public InputReader(String fileName) throws Exception {
+        this.fileName = fileName;
         this.actions = this.getActionsFromCsv();
         this.userIds = this.extractUserIds(actions);
         this.courseIds = this.extractCourseIds(actions);
@@ -34,9 +40,9 @@ public class InputReader {
     public Set<Action> getActionsFromCsv() throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
 
-        try (InputStream inputStream = classLoader.getResourceAsStream("mooc_actions_merged.csv")) {
+        try (InputStream inputStream = classLoader.getResourceAsStream(this.fileName)) {
             if (inputStream == null) {
-                throw new FileNotFoundException("mooc_actions_merged.csv not found in resources");
+                throw new FileNotFoundException(this.fileName + " not found in resources");
             }
 
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
