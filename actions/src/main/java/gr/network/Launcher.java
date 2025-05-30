@@ -1,6 +1,6 @@
 package gr.network;
 
-import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -9,11 +9,12 @@ import org.slf4j.LoggerFactory;
 import gr.network.client.Connection;
 import gr.network.domain.Action;
 import gr.network.load.GraphLoader;
+import gr.network.read.GraphReader;
 import gr.network.read.InputReader;
 
 /**
  * Launcher of the application.
- * @version 1.0
+ * @version 1.1
  */
 public class Launcher {
 
@@ -26,26 +27,9 @@ public class Launcher {
     private static String queryName;
 
     public static void main(String[] args) {
-
         boolean okInput = handleArgs(args);
-        if (!okInput) {
-            return;
-        }
+        if (!okInput) return;
 
-        // read data
-
-        // load dummy data in memory (normally this would be read from a file)
-        // List<String> users = List.of("0", "1", "2");
-        // List<String> courses = List.of("0", "1", "2");
-        // List<Action> actions = List.of(
-        //     new Action("0", "0", "0", "2023-10-01T12:00:00Z", 0.1, 0.2, 0.3, 0.4, 1),
-        //     new Action("1", "1", "1", "2023-10-01T12:00:00Z", 0.5, 0.6, 0.7, 0.8, 1),
-        //     new Action("2", "2", "2", "2023-10-01T12:00:00Z", 0.9, 1.0, 1.1, 1.2, 1),
-        //     new Action("3", "2", "2", "2023-10-01T12:00:00Z", 0.9, 1.0, 1.1, 1.2, 1),
-        //     new Action("4", "2", "1", "2023-10-01T12:00:00Z", 0.9, 1.0, 1.1, 1.2, 1)
-        // );
-
-        // graph-load the data if specified by user
         try (Connection connection = new Connection()) {
 
             if (shouldLoad) {
@@ -53,7 +37,7 @@ public class Launcher {
                 InputReader reader;
 
                 if (fileName != null) {
-                    LOGGER.info("Specified file name: {}",fileName);
+                    LOGGER.info("Specified file name: {}", fileName);
                     reader = new InputReader(fileName);
                 } else {
                     LOGGER.info("File name not specified, taking default");
@@ -63,99 +47,99 @@ public class Launcher {
                 Set<String> users = reader.getUserIds();
                 Set<String> courses = reader.getCourseIds();
                 Set<Action> actions = reader.getActions();
+
                 LOGGER.info("Loading {} Users", users.size());
                 LOGGER.info("Loading {} Courses", courses.size());
                 LOGGER.info("Loading {} Actions", actions.size());
+
                 GraphLoader loader = new GraphLoader(users, courses, actions, connection);
                 loader.load();
             }
 
+            GraphReader reader = new GraphReader(connection);
+
             if (shouldQuery) {
                 LOGGER.info("Graph Querying Specified: {}", queryName);
-                // execute the query on graph using GraphReader
+                reader.run(queryName);
+            } else {
+                // No query specified - ask user to choose one or all
+                System.out.println("\nAvailable Queries:");
+                System.out.println(" 0) all - Run all queries");
+                System.out.println(" 5) toptargets - Top 10 targets by distinct users");
+                System.out.println(" 6) avgactions - Average actions per user");
+                System.out.println(" 7) positivefeature2 - Show user/target pairs with feature2 > 0");
+                System.out.println(" 8) label1pertarget - Count label=1 per target");
+                System.out.print("\nChoose a query (0, 5-8): ");
+
+                Scanner scanner = new Scanner(System.in);
+                String choice = scanner.nextLine().trim();
+                scanner.close();
+
+                switch (choice) {
+                    case "0" -> {
+                        reader.run("toptargets");
+                        reader.run("avgactions");
+                        reader.run("positivefeature2");
+                        reader.run("label1pertarget");
+                    }
+                    case "5" -> reader.run("toptargets");
+                    case "6" -> reader.run("avgactions");
+                    case "7" -> reader.run("positivefeature2");
+                    case "8" -> reader.run("label1pertarget");
+                    default -> System.out.println("Invalid selection.");
+                }
             }
 
         } catch (Exception e) {
-            System.out.println("Connection failed.");
-            e.printStackTrace();
+            LOGGER.error("Connection failed.", e);
         }
     }
 
-    /**
-     * Handle the command line arguments by setting
-     * the user specifications.
-     * @param args the command line arguments
-     * @return true if the arguments are valid, false otherwise
-     */
     private static boolean handleArgs(String[] args) {
         switch (args.length) {
             case 0:
-                System.out.println(getUsage());
-                return false;
-            case 1:
-                if (args[0].equals("--load")) {
-                    shouldLoad = true;
-                    return true;
-                } else {
-                    System.out.println(getUsage());
-                    return false;
-                }
+                return true; // allow empty args, fall back to interactive
             case 2:
                 if (args[0].equals("--load")) {
                     shouldLoad = true;
-                    fileName = args[1];
                     return true;
                 } else if (args[0].equals("--query")) {
                     shouldQuery = true;
                     queryName = args[1];
                     return true;
-                } else {
-                    System.out.println(getUsage());
-                    return false;
                 }
+                break;
             case 3:
-                if (args[0].equals("--load")) {
+                if (args[0].equals("--load") && args[1].equals("--query")) {
                     shouldLoad = true;
-                    if (args[1].equals("--query")) {
-                        shouldQuery = true;
-                        queryName = args[2];
-                    } else {
-                        System.out.println(getUsage());
-                        return false;
-                    }
+                    shouldQuery = true;
+                    queryName = args[2];
                     return true;
-                } else {
-                    System.out.println(getUsage());
-                    return false;
                 }
+                break;
             case 4:
-                if (args[0].equals("--load")) {
+                if (args[0].equals("--load") && args[2].equals("--query")) {
                     shouldLoad = true;
                     fileName = args[1];
-                    if (args[2].equals("--query")) {
-                        shouldQuery = true;
-                        queryName = args[3];
-                        return true;
-                    } else {
-                        System.out.println(getUsage());
-                        return false;
-                    }
-                } else {
-                    System.out.println(getUsage());
-                    return false;
+                    shouldQuery = true;
+                    queryName = args[3];
+                    return true;
                 }
-            default:
-                System.out.println(getUsage());
-                return false;
+                break;
         }
+        System.out.println(getUsage());
+        return false;
     }
 
     private static String getUsage() {
-        return "Usage: java -jar <jar_name>.jar <args>\n" +
-            "  --load : Load the graph from the default file (mooc_actions_merged.csv)\n" +
-            "  --load <path_to_csv_file> : Load the graph from the given file\n" +
-            "  --query <query_alias> : Query the graph with the given query alias\n" +
-            "  --load --query <query_name> : Load the graph and query it with the given query name\n" +
-            "  --load <path_to_csv_file> --query <query_name> : Load the graph from a specified file and query it with the given query name\n";
+        return """
+                Usage: java -jar <jar_name>.jar <args>
+                  --load : Load the graph from the default file (mooc_actions_merged.csv)
+                  --load <path_to_csv_file> : Load the graph from the given file
+                  --query <query_alias> : Query the graph with the given query alias
+                  --load --query <query_name> : Load the graph and query it with the given query name
+                  --load <path_to_csv_file> --query <query_name> : Load the graph from a specified file and query it with the given query name
+                  [NO ARGS] : Just run and choose a query interactively (type 0 for all queries)
+                """;
     }
 }

@@ -1,3 +1,18 @@
-.env
+# IDE settings
+.idea/
+*.iml
+
+# VSCode settings
 .vscode/
+
+# Java/Maven build
 target/
+build/
+
+# Env files
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
