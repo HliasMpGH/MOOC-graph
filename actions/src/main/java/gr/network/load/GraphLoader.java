@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,21 +22,16 @@ public class GraphLoader {
     private final Logger logger = LoggerFactory.getLogger(GraphLoader.class);
 
     /** Connection to neo4j */
-    private Connection connection;
+    private final Connection connection;
 
     /** The user nodes to be loaded */
-    private Set<String> users;
+    private final Set<String> users;
 
     /** The course nodes to be loaded */
-    private Set<String> courses;
+    private final Set<String> courses;
 
     /** The action (user-course) edges to be loaded */
-    private Set<Action> actions;
-
-    public GraphLoader(Set<String> users, Set<String> courses, Set<Action> actions) {
-        // receive the graph to load
-        this(users, courses, actions, new Connection());
-    }
+    private final Set<Action> actions;
 
     public GraphLoader(
         Set<String> users,
@@ -52,11 +46,15 @@ public class GraphLoader {
     }
 
     /**
-     * Load the graph to the database..
+     * Load the graph to the database.
      */
     public void load() {
         logger.info("Loading graph...");
         loadNodes();
+
+        logger.info("Creating indexes...");
+        createIndexes();
+
         loadEdges();
     }
 
@@ -75,7 +73,7 @@ public class GraphLoader {
     }
 
     /**
-     * Load the a set of nodes into the database
+     * Load the set of nodes into the database
      * as batches. Loading them all by once would be inefficient.
      */
     private void loadNodesInBatches(Set<String> nodeIds, String nodeLabel, int batchSize) {
@@ -96,20 +94,20 @@ public class GraphLoader {
 
     /**
      * Load the edges to the database.
-     * This method assumes that the nodes have already been loaded
+     * This method assumes that the nodes have already been loaded,
      * and it creates the edges between them.
      */
     private void loadEdges() {
         logger.info("Loading edges...");
 
-        // load actions in btatches
+        // load actions in batches
         loadEdgesInBatches(actions, 5000);
 
         logger.info("loaded edges");
     }
 
     /**
-     * Load the a set of edges into the database
+     * Load the set of edges into the database
      * as batches. Loading them all by once would be inefficient.
      */
     private void loadEdgesInBatches(Set<Action> actions, int batchSize) {
@@ -122,7 +120,7 @@ public class GraphLoader {
             // Convert to maps for parameterized query
             List<Map<String, Object>> actionMaps = batch.stream()
                 .map(this::actionToMap)
-                .collect(Collectors.toList());
+                .toList();
 
             String cypher = """
                     UNWIND $actions AS action
@@ -163,4 +161,26 @@ public class GraphLoader {
             "label", action.getLabel()
         );
     }
+
+    /**
+     * Creates indexes to speed up future queries.
+     */
+    private void createIndexes() {
+        var session = connection.getSession();
+
+        // Create index for User(id)
+        session.run("CREATE INDEX user_id_index IF NOT EXISTS FOR (u:User) ON (u.id)");
+
+        // Create index for Course(id)
+        session.run("CREATE INDEX course_id_index IF NOT EXISTS FOR (c:Course) ON (c.id)");
+
+        // Create index for relationship feature2
+        session.run("CREATE INDEX feature2_index IF NOT EXISTS FOR ()-[r:ACTION]-() ON (r.feature2)");
+
+        // Create index for relationship label
+        session.run("CREATE INDEX label_index IF NOT EXISTS FOR ()-[r:ACTION]-() ON (r.label)");
+
+        logger.info("Indexes created.");
+    }
+
 }

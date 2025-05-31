@@ -20,15 +20,15 @@ public class Connection implements AutoCloseable {
     private final Logger logger = LoggerFactory.getLogger(Connection.class);
 
     /** The connection details. */
-    private String uri;
-    private String user;
-    private String password;
-    private String dbName;
+    private final String uri;
+    private final String user;
+    private final String password;
+    private final String dbName;
 
     private Driver driver;
     private Session connectionSession;
 
-    private static Dotenv dotenv = Dotenv.configure()
+    private static final Dotenv dotenv = Dotenv.configure()
         .directory("./")
         .load();
 

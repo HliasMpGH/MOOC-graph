@@ -38,7 +38,6 @@ public class Action {
     public Action() {}
 
     public String getAction() { return action; }
-    public void setAction(String action) { this.action = action; }
 
     public String getUser() { return user; }
     public void setUser(String user) { this.user = user; }

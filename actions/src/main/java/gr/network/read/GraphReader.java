@@ -14,7 +14,7 @@ import java.util.Scanner;
 /**
  * Communicates with the Neo4j database
  * to query data from it.
- * @version 1.0
+ * @version 1.1 (optimized with index-based queries)
  */
 public class GraphReader {
 
@@ -49,12 +49,12 @@ public class GraphReader {
     }
 
     /**
-     * (5) For each target, count how many distinct users performed an action
+     * (5) Top 10 target courses by number of unique users who performed actions
      */
     private void topTargets() {
         String cypher = """
             MATCH (u:User)-[:ACTION]->(t:Course)
-            RETURN t.id AS targetID, count(DISTINCT u) AS userCount
+            RETURN t.id AS targetID, count(DISTINCT u.id) AS userCount
             ORDER BY userCount DESC
             LIMIT 10
             """;
@@ -82,7 +82,7 @@ public class GraphReader {
         String cypher = """
             MATCH (u:User)-[r:ACTION]->(t:Course)
             WHERE r.feature2 > 0
-            RETURN u.id AS userID, t.id AS targetID
+            RETURN DISTINCT u.id AS userID, t.id AS targetID
             LIMIT 10
             """;
 
@@ -94,9 +94,8 @@ public class GraphReader {
      */
     private void labelOnePerTarget() {
         String cypher = """
-            MATCH (:User)-[r:ACTION]->(t:Course)
-            WHERE r.label = 1
-            RETURN t.id AS targetID, count(r) AS labelOneCount
+            MATCH (:User)-[:ACTION {label: 1}]->(t:Course)
+            RETURN t.id AS targetID, count(*) AS labelOneCount
             ORDER BY labelOneCount DESC
             LIMIT 10
             """;
@@ -109,16 +108,21 @@ public class GraphReader {
      */
     private void executeAndPrint(String label, String cypher) {
         long start = System.nanoTime();
-        Result result = session.run(cypher);
-        double duration = (System.nanoTime() - start) / 1_000_000.0;
+        try {
+            Result result = session.run(cypher);
+            double duration = (System.nanoTime() - start) / 1_000_000.0;
 
-        System.out.printf("\n▶ %s (%.2f ms)\n", label, duration);
-        while (result.hasNext()) {
-            Record r = result.next();
-            for (String key : r.keys()) {
-                System.out.print(key + ": " + r.get(key) + "\t");
+            System.out.printf("\n▶ %s (%.2f ms)\n", label, duration);
+            while (result.hasNext()) {
+                Record r = result.next();
+                for (String key : r.keys()) {
+                    System.out.print(key + ": " + r.get(key) + "\t");
+                }
+                System.out.println();
             }
-            System.out.println();
+        } catch (Exception e) {
+            System.err.printf("Error executing query '%s': %s\n", label, e.getMessage());
+            logger.error("Error executing query '{}'", label, e);
         }
     }
 

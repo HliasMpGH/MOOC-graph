@@ -20,11 +20,11 @@ import gr.network.domain.Action;
  * @version 1.0
  */
 public class InputReader {
-    private String fileName;
+    private final String fileName;
 
-    private Set<Action> actions;
-    private Set<String> userIds;
-    private Set<String> courseIds;
+    private final Set<Action> actions;
+    private final Set<String> userIds;
+    private final Set<String> courseIds;
 
     public InputReader() throws Exception {
         this("mooc_actions_merged.csv");
