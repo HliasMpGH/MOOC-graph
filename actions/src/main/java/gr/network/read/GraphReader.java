@@ -52,15 +52,23 @@ public class GraphReader {
      * (5) Top 10 target courses by number of unique users who performed actions
      */
     private void topTargets() {
+        session.run("""
+        MATCH (t:Course)
+        WITH t, COUNT { (:User)-[:ACTION]->(t) } AS count
+        SET t.userCount = count
+    """);
+
         String cypher = """
-            MATCH (u:User)-[:ACTION]->(t:Course)
-            RETURN t.id AS targetID, count(DISTINCT u.id) AS userCount
-            ORDER BY userCount DESC
-            LIMIT 10
-            """;
+        MATCH (t:Course)
+        RETURN t.id AS targetID, t.userCount AS userCount
+        ORDER BY userCount DESC
+        LIMIT 10
+    """;
 
         executeAndPrint("Top 10 targets by distinct users", cypher);
     }
+
+
 
     /**
      * (6) Count the average number of actions per user
