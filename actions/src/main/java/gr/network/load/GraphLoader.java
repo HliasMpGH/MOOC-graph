@@ -8,7 +8,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gr.network.client.Connection;
+import gr.network.client.Neo4jConnection;
 import gr.network.domain.Action;
 
 /**
@@ -22,7 +22,7 @@ public class GraphLoader {
     private final Logger logger = LoggerFactory.getLogger(GraphLoader.class);
 
     /** Connection to neo4j */
-    private final Connection connection;
+    private final Neo4jConnection connection;
 
     /** The user nodes to be loaded */
     private final Set<String> users;
@@ -37,7 +37,7 @@ public class GraphLoader {
         Set<String> users,
         Set<String> courses,
         Set<Action> actions,
-        Connection connection
+        Neo4jConnection connection
     ) {
         this.users = users;
         this.courses = courses;

@@ -6,9 +6,11 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gr.network.client.Connection;
+import gr.network.client.Neo4jConnection;
+import gr.network.client.SqliteConnection;
 import gr.network.domain.Action;
 import gr.network.load.GraphLoader;
+import gr.network.load.SqliteLoader;
 import gr.network.read.GraphReader;
 import gr.network.read.InputReader;
 
@@ -32,7 +34,10 @@ public class Launcher {
         boolean okInput = handleArgs(args);
         if (!okInput) return;
 
-        try (Connection connection = new Connection()) {
+        try (
+            Neo4jConnection neo4jConnection = new Neo4jConnection();
+            SqliteConnection sqliteConnection = new SqliteConnection();
+        ) {
 
             if (shouldLoad) {
                 LOGGER.info("Graph Loading Specified");
@@ -54,11 +59,17 @@ public class Launcher {
                 LOGGER.info("Loading {} Courses", courses.size());
                 LOGGER.info("Loading {} Actions", actions.size());
 
-                GraphLoader loader = new GraphLoader(users, courses, actions, connection);
+                // load in sqlite
+                SqliteLoader sqliteLoader = new SqliteLoader(users, courses, actions, sqliteConnection.getConnection());
+                sqliteLoader.load();
+                LOGGER.info("Sqlite Loading Done");
+
+                GraphLoader loader = new GraphLoader(users, courses, actions, neo4jConnection);
                 loader.load();
+                LOGGER.info("Neo4j Loading Done");
             }
 
-            GraphReader reader = new GraphReader(connection, scanner);
+            GraphReader reader = new GraphReader(neo4jConnection, scanner);
 
             if (shouldQuery) {
                 LOGGER.info("Graph Querying Specified: {}", queryName);

@@ -7,7 +7,7 @@ import org.neo4j.driver.Record;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gr.network.client.Connection;
+import gr.network.client.Neo4jConnection;
 
 import java.util.Scanner;
 
@@ -23,7 +23,7 @@ public class GraphReader {
 
     private Scanner scanner;
 
-    public GraphReader(Connection connection, Scanner scanner) {
+    public GraphReader(Neo4jConnection connection, Scanner scanner) {
         this.session = connection.getSession();
         this.scanner = scanner;
     }
