@@ -65,28 +65,13 @@ public class Launcher {
                 reader.run(queryName);
             } else {
                 // No query specified - ask user to choose one or all
-                System.out.println("\nAvailable Queries:");
-                System.out.println(" 0) all - Run all queries");
-                System.out.println(" 1) graphsize - Count of user, courses and actions");
-                System.out.println(" 2) actionstargetsofuser - Show the actions and targets of a user");
-                System.out.println(" 3) actionsperuser - Count of actions per user");
-                System.out.println(" 4) toptargets - Top 10 targets by distinct users");
-                System.out.println(" 5) avgactions - Average actions per user");
-                System.out.println(" 6) positivefeature2 - Show user/target pairs with feature2 > 0");
-                System.out.println(" 7) label1pertarget - Count label=1 per target");
-                System.out.print("\nChoose a query (0-7): ");
+                printAvailableExecutions();
 
                 String choice = scanner.nextLine().trim();
 
                 switch (choice) {
                     case "0" -> {
-                        reader.run("graphsize");
-                        reader.run("actionstargetsofuser");
-                        reader.run("actionsperuser");
-                        reader.run("toptargets");
-                        reader.run("avgactions");
-                        reader.run("positivefeature2");
-                        reader.run("label1pertarget");
+                        runAllQueries(reader);
                     }
                     case "1" -> reader.run("graphsize");
                     case "2" -> reader.run("actionstargetsofuser");
@@ -95,7 +80,7 @@ public class Launcher {
                     case "5" -> reader.run("avgactions");
                     case "6" -> reader.run("positivefeature2");
                     case "7" -> reader.run("label1pertarget");
-                    default -> System.out.println("Invalid selection.");
+                    default -> System.out.println("Invalid selection " + choice);
                 }
             }
 
@@ -142,15 +127,44 @@ public class Launcher {
         return false;
     }
 
+    /**
+     * Return the execution usage of the application.
+     */
     private static String getUsage() {
         return """
-                Usage: java -jar <jar_name>.jar <args>
-                  --load : Load the graph from the default file (mooc_actions_merged.csv)
-                  --load <path_to_csv_file> : Load the graph from the given file
-                  --query <query_alias> : Query the graph with the given query alias
-                  --load --query <query_name> : Load the graph and query it with the given query name
-                  --load <path_to_csv_file> --query <query_name> : Load the graph from a specified file and query it with the given query name
-                  [NO ARGS] : Just run and choose a query interactively (type 0 for all queries)
-                """;
+            Usage: java -jar <jar_name>.jar <args>
+                --load : Load the graph from the default file (mooc_actions_merged.csv)
+                --load <path_to_csv_file> : Load the graph from the given file
+                --query <query_alias> : Query the graph with the given query alias
+                --load --query <query_name> : Load the graph and query it with the given query name
+                --load <path_to_csv_file> --query <query_name> : Load the graph from a specified file and query it with the given query name
+                [NO ARGS] : Just run and choose a query interactively (type 0 for all queries)
+        """;
+    }
+
+    /**
+     * Print the running usage of the application.
+     */
+    private static void printAvailableExecutions() {
+        System.out.println("\nAvailable Queries:");
+        System.out.println(" 0) all - Run all queries");
+        System.out.println(" 1) graphsize - Count of user, courses and actions");
+        System.out.println(" 2) actionstargetsofuser - Show the actions and targets of a user");
+        System.out.println(" 3) actionsperuser - Count of actions per user");
+        System.out.println(" 4) toptargets - Top 10 targets by distinct users");
+        System.out.println(" 5) avgactions - Average actions per user");
+        System.out.println(" 6) positivefeature2 - Show user/target pairs with feature2 > 0");
+        System.out.println(" 7) label1pertarget - Count label=1 per target");
+        System.out.print("\nChoose a query (0-7): ");
+    }
+
+    private static void runAllQueries(GraphReader reader) {
+        reader.run("graphsize");
+        reader.run("actionstargetsofuser");
+        reader.run("actionsperuser");
+        reader.run("toptargets");
+        reader.run("avgactions");
+        reader.run("positivefeature2");
+        reader.run("label1pertarget");
     }
 }

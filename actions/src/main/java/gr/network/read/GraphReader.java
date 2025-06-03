@@ -202,7 +202,7 @@ public class GraphReader {
             Result result = session.run(cypher);
             double duration = (System.nanoTime() - start) / 1_000_000.0;
 
-            System.out.printf("\n▶ %s (%.2f ms)\n", label, duration);
+            System.out.printf("\n> %s (%.2f ms)\n", label, duration);
             while (result.hasNext()) {
                 Record r = result.next();
                 for (String key : r.keys()) {
@@ -223,10 +223,13 @@ public class GraphReader {
         System.out.println("""
             Available Queries:
             ───────────────────────────────
-            1. toptargets        → Count distinct users per course
-            2. avgactions        → Average number of actions per user
-            3. positivefeature2  → (userID, courseID) where feature2 > 0
-            4. label1pertarget   → Count of label=1 actions per course
+            graphsize         -> Count of users, courses and actions
+            actionstargetsofuser -> Actions and targets of a user
+            actionsperuser    -> Count of actions per user
+            toptargets        -> Count distinct users per course
+            avgactions        -> Average number of actions per user
+            positivefeature2  -> (userID, courseID) where feature2 > 0
+            label1pertarget   -> Count of label=1 actions per course
         """);
     }
 }
