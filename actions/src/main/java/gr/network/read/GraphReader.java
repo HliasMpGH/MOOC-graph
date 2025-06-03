@@ -23,8 +23,9 @@ public class GraphReader {
 
     private Scanner scanner;
 
-    public GraphReader(Connection connection) {
+    public GraphReader(Connection connection, Scanner scanner) {
         this.session = connection.getSession();
+        this.scanner = scanner;
     }
 
     /**
@@ -35,7 +36,6 @@ public class GraphReader {
         if (queryName == null || queryName.isBlank()) {
             printAvailableQueries();
             System.out.print("Choose one query to run: ");
-            scanner = new Scanner(System.in);
             queryName = scanner.nextLine();
         }
 
@@ -45,8 +45,14 @@ public class GraphReader {
             case "graphsize" -> graphSize();
             case "actionstargetsofuser" -> {
                 // take user input for the user id
+                String userId = "";
+                do {
+                    System.out.print("Provide a user id: ");
+                    userId = scanner.nextLine().trim();
+                } while (userId.isBlank());
 
-                actionsTargetsOfUser("0");
+
+                actionsTargetsOfUser(userId);
             }
             case "actionsperuser" -> actionsPerUser();
             case "toptargets" -> topTargets();

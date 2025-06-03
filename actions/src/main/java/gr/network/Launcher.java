@@ -26,6 +26,8 @@ public class Launcher {
     private static boolean shouldQuery;
     private static String queryName;
 
+    private static final Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
         boolean okInput = handleArgs(args);
         if (!okInput) return;
@@ -56,7 +58,7 @@ public class Launcher {
                 loader.load();
             }
 
-            GraphReader reader = new GraphReader(connection);
+            GraphReader reader = new GraphReader(connection, scanner);
 
             if (shouldQuery) {
                 LOGGER.info("Graph Querying Specified: {}", queryName);
@@ -74,9 +76,7 @@ public class Launcher {
                 System.out.println(" 7) label1pertarget - Count label=1 per target");
                 System.out.print("\nChoose a query (0-7): ");
 
-                Scanner scanner = new Scanner(System.in);
                 String choice = scanner.nextLine().trim();
-                scanner.close();
 
                 switch (choice) {
                     case "0" -> {
@@ -101,6 +101,8 @@ public class Launcher {
 
         } catch (Exception e) {
             LOGGER.error("Connection failed.", e);
+        } finally {
+            scanner.close();
         }
     }
 
