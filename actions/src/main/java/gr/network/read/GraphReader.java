@@ -21,6 +21,8 @@ public class GraphReader {
     private final Logger logger = LoggerFactory.getLogger(GraphReader.class);
     private final Session session;
 
+    private Scanner scanner;
+
     public GraphReader(Connection connection) {
         this.session = connection.getSession();
     }
@@ -33,19 +35,95 @@ public class GraphReader {
         if (queryName == null || queryName.isBlank()) {
             printAvailableQueries();
             System.out.print("Choose one query to run: ");
-            Scanner scanner = new Scanner(System.in);
+            scanner = new Scanner(System.in);
             queryName = scanner.nextLine();
         }
 
         logger.info("Running query '{}'.", queryName);
 
         switch (queryName.toLowerCase()) {
+            case "graphsize" -> graphSize();
+            case "actionstargetsofuser" -> {
+                // take user input for the user id
+
+                actionsTargetsOfUser("0");
+            }
+            case "actionsperuser" -> actionsPerUser();
             case "toptargets" -> topTargets();
             case "avgactions" -> avgActionsPerUser();
             case "positivefeature2" -> userTargetWithPositiveFeature2();
             case "label1pertarget" -> labelOnePerTarget();
             default -> System.out.println("Unknown query: " + queryName);
         }
+    }
+
+    /**
+     * (2) Count of users, courses and actions
+     */
+    private void graphSize() {
+        System.out.println("gaphsize");
+        String userCountCypher = getNodeCountCypher("User");
+        String courseCountCypher = getNodeCountCypher("Course");
+        String actionCountCypher = getRelationshipCountCypher(
+            "User",
+            "ACTION" ,
+            "Course"
+        );
+
+        executeAndPrint("Total Users Count", userCountCypher);
+        executeAndPrint("Total Courses Count", courseCountCypher);
+        executeAndPrint("Total Actions Count", actionCountCypher);
+    }
+
+    private String getNodeCountCypher(String label) {
+        return String.format(
+            "MATCH (n:%s) RETURN count(n) as %sCount",
+            label,
+            label.toLowerCase()
+        );
+    }
+
+    private String getRelationshipCountCypher(String node1Label, String relationshipLabel, String node2Label) {
+        return String.format(
+            "MATCH (n1:%s)-[r:%s]->(n2:%s) RETURN count(r) as %sCount",
+            node1Label,
+            relationshipLabel,
+            node2Label,
+            relationshipLabel.toLowerCase()
+        );
+    }
+
+    /**
+     * (3) All actions and targets of a user
+     */
+    private void actionsTargetsOfUser(String userID) {
+        System.out.println("actionsTargetsOfUser of id " + userID);
+
+        String actionsTargetCypher = String.format(
+        """
+            MATCH (:User {id: '%s'})
+            -[action:ACTION]->
+            (course:Course)
+            return action.action as actionId, course.id as courseID
+        """, userID);
+
+        executeAndPrint("Actions and Targets of user " + userID, actionsTargetCypher);
+    }
+
+    /**
+     * (4) Action counts per user
+     */
+    private void actionsPerUser() {
+        System.out.println("actionsPerUser");
+
+        String actionsTargetCypher = String.format(
+        """
+            MATCH (user:User)
+            -[action:ACTION]->()
+            return user.id as userId, count(action) as totalActions
+        """);
+
+        executeAndPrint("Action Counts per User", actionsTargetCypher);
     }
 
     /**
@@ -67,8 +145,6 @@ public class GraphReader {
 
         executeAndPrint("Top 10 targets by distinct users", cypher);
     }
-
-
 
     /**
      * (6) Count the average number of actions per user

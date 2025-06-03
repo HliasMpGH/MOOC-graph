@@ -65,11 +65,14 @@ public class Launcher {
                 // No query specified - ask user to choose one or all
                 System.out.println("\nAvailable Queries:");
                 System.out.println(" 0) all - Run all queries");
-                System.out.println(" 5) toptargets - Top 10 targets by distinct users");
-                System.out.println(" 6) avgactions - Average actions per user");
-                System.out.println(" 7) positivefeature2 - Show user/target pairs with feature2 > 0");
-                System.out.println(" 8) label1pertarget - Count label=1 per target");
-                System.out.print("\nChoose a query (0, 5-8): ");
+                System.out.println(" 1) graphsize - Count of user, courses and actions");
+                System.out.println(" 2) actionstargetsofuser - Show the actions and targets of a user");
+                System.out.println(" 3) actionsperuser - Count of actions per user");
+                System.out.println(" 4) toptargets - Top 10 targets by distinct users");
+                System.out.println(" 5) avgactions - Average actions per user");
+                System.out.println(" 6) positivefeature2 - Show user/target pairs with feature2 > 0");
+                System.out.println(" 7) label1pertarget - Count label=1 per target");
+                System.out.print("\nChoose a query (0-7): ");
 
                 Scanner scanner = new Scanner(System.in);
                 String choice = scanner.nextLine().trim();
@@ -77,15 +80,21 @@ public class Launcher {
 
                 switch (choice) {
                     case "0" -> {
+                        reader.run("graphsize");
+                        reader.run("actionstargetsofuser");
+                        reader.run("actionsperuser");
                         reader.run("toptargets");
                         reader.run("avgactions");
                         reader.run("positivefeature2");
                         reader.run("label1pertarget");
                     }
-                    case "5" -> reader.run("toptargets");
-                    case "6" -> reader.run("avgactions");
-                    case "7" -> reader.run("positivefeature2");
-                    case "8" -> reader.run("label1pertarget");
+                    case "1" -> reader.run("graphsize");
+                    case "2" -> reader.run("actionstargetsofuser");
+                    case "3" -> reader.run("actionsperuser");
+                    case "4" -> reader.run("toptargets");
+                    case "5" -> reader.run("avgactions");
+                    case "6" -> reader.run("positivefeature2");
+                    case "7" -> reader.run("label1pertarget");
                     default -> System.out.println("Invalid selection.");
                 }
             }
