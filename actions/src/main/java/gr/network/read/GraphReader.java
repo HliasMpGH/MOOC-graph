@@ -136,15 +136,10 @@ public class GraphReader {
      * (5) Top 10 target courses by number of unique users who performed actions
      */
     private void topTargets() {
-        session.run("""
-        MATCH (t:Course)
-        WITH t, COUNT { (:User)-[:ACTION]->(t) } AS count
-        SET t.userCount = count
-    """);
-
         String cypher = """
         MATCH (t:Course)
-        RETURN t.id AS targetID, t.userCount AS userCount
+        MATCH (u:User)-[:ACTION]->(t)
+        RETURN t.id AS targetID, COUNT(DISTINCT u) as userCount
         ORDER BY userCount DESC
         LIMIT 10
     """;
