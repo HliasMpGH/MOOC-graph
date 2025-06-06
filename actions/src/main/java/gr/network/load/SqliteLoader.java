@@ -39,6 +39,9 @@ public class SqliteLoader {
         connection.setAutoCommit(false);
 
         try {
+            // Create tables first
+            createTables();
+            
             // insert users
             bulkInsertUsers(users);
 
@@ -60,6 +63,47 @@ public class SqliteLoader {
             throw e;
         } finally {
             connection.setAutoCommit(true);
+        }
+    }
+
+    private void createTables() throws SQLException {
+        String createUsersTable = """
+            CREATE TABLE IF NOT EXISTS Users(
+                userId TEXT PRIMARY KEY
+            )
+            """;
+        
+        String createCoursesTable = """
+            CREATE TABLE IF NOT EXISTS Courses(
+                courseId TEXT PRIMARY KEY
+            )
+            """;
+        
+        String createActionsTable = """
+            CREATE TABLE IF NOT EXISTS Actions(
+                actionId TEXT PRIMARY KEY,
+                userId TEXT,
+                courseId TEXT,
+                tmsmp DATETIME,
+                label INTEGER,
+                feature0 REAL,
+                feature1 REAL,
+                feature2 REAL,
+                feature3 REAL,
+                FOREIGN KEY (userId) REFERENCES Users(userId),
+                FOREIGN KEY (courseId) REFERENCES Courses(courseId)
+            )
+            """;
+        
+        try (var stmt1 = connection.prepareStatement(createUsersTable);
+             var stmt2 = connection.prepareStatement(createCoursesTable);
+             var stmt3 = connection.prepareStatement(createActionsTable)) {
+            
+            stmt1.execute();
+            stmt2.execute();
+            stmt3.execute();
+            
+            System.out.println("Tables created successfully");
         }
     }
 
