@@ -111,6 +111,7 @@ public class GraphReader {
             -[action:ACTION]->
             (course:Course)
             return action.action as actionId, course.id as courseID
+            LIMIT 10
         """, userID);
 
         executeAndPrint("Actions and Targets of user " + userID, actionsTargetCypher);
@@ -124,9 +125,10 @@ public class GraphReader {
 
         String actionsTargetCypher = String.format(
         """
-            MATCH (user:User)
-            -[action:ACTION]->()
-            return user.id as userId, count(action) as totalActions
+            MATCH (user:User)-[action:ACTION]->()
+            RETURN user.id as userId, count(action) as totalActions
+            ORDER BY userId
+            LIMIT 10
         """);
 
         executeAndPrint("Action Counts per User", actionsTargetCypher);

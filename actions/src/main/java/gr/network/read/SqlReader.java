@@ -46,7 +46,6 @@ public class SqlReader {
         logger.info("Running SQL query '{}'.", queryName);
 
         switch (queryName.toLowerCase()) {
-            case "sampledata" -> sampleData();
             case "graphsize" -> graphSize();
             case "actionstargetsofuser" -> {
                 // take user input for the user id
@@ -65,15 +64,6 @@ public class SqlReader {
             case "label1pertarget" -> labelOnePerTarget();
             default -> System.out.println("Unknown query: " + queryName);
         }
-    }
-
-    /**
-     * (1) Show a small portion of the database
-     */
-    private void sampleData() {
-        System.out.println("Sample data from database");
-        String sql = "SELECT actionId, userId, courseId, label, feature2 FROM Actions LIMIT 10";
-        executeAndPrint("Sample Database Portion", sql);
     }
 
     /**
@@ -97,7 +87,7 @@ public class SqlReader {
     private void actionsTargetsOfUser(String userID) {
         System.out.println("Actions and targets of user " + userID);
 
-        String sql = "SELECT actionId, courseId as targetId FROM Actions WHERE userId = ?";
+        String sql = "SELECT actionId, courseId as targetId FROM Actions WHERE userId = ? LIMIT 10";
         executeAndPrint("Actions and Targets of user " + userID, sql, userID);
     }
 
@@ -112,6 +102,7 @@ public class SqlReader {
             FROM Actions 
             GROUP BY userId
             ORDER BY userId
+            LIMIT 10
             """;
 
         executeAndPrint("Action Counts per User", sql);
@@ -221,7 +212,6 @@ public class SqlReader {
         System.out.println("""
             Available SQL Queries:
             ───────────────────────────────
-            sampledata        -> Show sample data from database
             graphsize         -> Count of users, courses and actions
             actionstargetsofuser -> Actions and targets of a user
             actionsperuser    -> Count of actions per user

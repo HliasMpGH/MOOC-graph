@@ -97,7 +97,6 @@ public class QueryComparison {
      */
     public void runAllComparisons() {
         String[] queries = {
-            "sampledata",
             "graphsize", 
             "actionsperuser",
             "toptargets",
@@ -166,7 +165,6 @@ public class QueryComparison {
         System.out.println("""
             Available Queries for Comparison:
             ───────────────────────────────
-            sampledata        -> Show sample data from database
             graphsize         -> Count of users, courses and actions
             actionstargetsofuser -> Actions and targets of a user
             actionsperuser    -> Count of actions per user
