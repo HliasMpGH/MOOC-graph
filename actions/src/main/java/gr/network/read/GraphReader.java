@@ -31,8 +31,9 @@ public class GraphReader {
     /**
      * Executes the query specified by alias.
      * If queryName is null or empty, display menu and let user choose.
+     * @return execution time in milliseconds
      */
-    public void run(String queryName) {
+    public double run(String queryName) {
         if (queryName == null || queryName.isBlank()) {
             printAvailableQueries();
             System.out.print("Choose one query to run: ");
@@ -41,8 +42,9 @@ public class GraphReader {
 
         logger.info("Running query '{}'.", queryName);
 
+        double totalTime = 0.0;
         switch (queryName.toLowerCase()) {
-            case "graphsize" -> graphSize();
+            case "graphsize" -> totalTime = graphSize();
             case "actionstargetsofuser" -> {
                 // take user input for the user id
                 String userId = "";
@@ -52,21 +54,23 @@ public class GraphReader {
                 } while (userId.isBlank());
 
 
-                actionsTargetsOfUser(userId);
+                totalTime = actionsTargetsOfUser(userId);
             }
-            case "actionsperuser" -> actionsPerUser();
-            case "toptargets" -> topTargets();
-            case "avgactions" -> avgActionsPerUser();
-            case "positivefeature2" -> userTargetWithPositiveFeature2();
-            case "label1pertarget" -> labelOnePerTarget();
+            case "actionsperuser" -> totalTime = actionsPerUser();
+            case "toptargets" -> totalTime = topTargets();
+            case "avgactions" -> totalTime = avgActionsPerUser();
+            case "positivefeature2" -> totalTime = userTargetWithPositiveFeature2();
+            case "label1pertarget" -> totalTime = labelOnePerTarget();
             default -> System.out.println("Unknown query: " + queryName);
         }
+        return totalTime;
     }
 
     /**
      * (2) Count of users, courses and actions
+     * @return total execution time in milliseconds
      */
-    private void graphSize() {
+    private double graphSize() {
         System.out.println("gaphsize");
         String userCountCypher = getNodeCountCypher("User");
         String courseCountCypher = getNodeCountCypher("Course");
@@ -76,9 +80,10 @@ public class GraphReader {
             "Course"
         );
 
-        executeAndPrint("Total Users Count", userCountCypher);
-        executeAndPrint("Total Courses Count", courseCountCypher);
-        executeAndPrint("Total Actions Count", actionCountCypher);
+        double time1 = executeAndPrint("Total Users Count", userCountCypher);
+        double time2 = executeAndPrint("Total Courses Count", courseCountCypher);
+        double time3 = executeAndPrint("Total Actions Count", actionCountCypher);
+        return time1 + time2 + time3;
     }
 
     private String getNodeCountCypher(String label) {
@@ -101,8 +106,9 @@ public class GraphReader {
 
     /**
      * (3) All actions and targets of a user
+     * @return execution time in milliseconds
      */
-    private void actionsTargetsOfUser(String userID) {
+    private double actionsTargetsOfUser(String userID) {
         System.out.println("actionsTargetsOfUser of id " + userID);
 
         String actionsTargetCypher = String.format(
@@ -114,13 +120,14 @@ public class GraphReader {
             LIMIT 10
         """, userID);
 
-        executeAndPrint("Actions and Targets of user " + userID, actionsTargetCypher);
+        return executeAndPrint("Actions and Targets of user " + userID, actionsTargetCypher);
     }
 
     /**
      * (4) Action counts per user
+     * @return execution time in milliseconds
      */
-    private void actionsPerUser() {
+    private double actionsPerUser() {
         System.out.println("actionsPerUser");
 
         String actionsTargetCypher = String.format(
@@ -131,13 +138,14 @@ public class GraphReader {
             LIMIT 10
         """);
 
-        executeAndPrint("Action Counts per User", actionsTargetCypher);
+        return executeAndPrint("Action Counts per User", actionsTargetCypher);
     }
 
     /**
      * (5) Top 10 target courses by number of unique users who performed actions
+     * @return execution time in milliseconds
      */
-    private void topTargets() {
+    private double topTargets() {
         String cypher = """
         MATCH (t:Course)
         MATCH (u:User)-[:ACTION]->(t)
@@ -146,26 +154,28 @@ public class GraphReader {
         LIMIT 10
     """;
 
-        executeAndPrint("Top 10 targets by distinct users", cypher);
+        return executeAndPrint("Top 10 targets by distinct users", cypher);
     }
 
     /**
      * (6) Count the average number of actions per user
+     * @return execution time in milliseconds
      */
-    private void avgActionsPerUser() {
+    private double avgActionsPerUser() {
         String cypher = """
             MATCH (u:User)-[r:ACTION]->()
             WITH u, count(r) AS total
             RETURN avg(total) AS avgActionsPerUser
             """;
 
-        executeAndPrint("Average actions per user", cypher);
+        return executeAndPrint("Average actions per user", cypher);
     }
 
     /**
      * (7) Show the userID and the targetID, if the action has positive Feature2
+     * @return execution time in milliseconds
      */
-    private void userTargetWithPositiveFeature2() {
+    private double userTargetWithPositiveFeature2() {
         String cypher = """
             MATCH (u:User)-[r:ACTION]->(t:Course)
             WHERE r.feature2 > 0
@@ -173,13 +183,14 @@ public class GraphReader {
             LIMIT 10
             """;
 
-        executeAndPrint("User/Target with Feature2 > 0", cypher);
+        return executeAndPrint("User/Target with Feature2 > 0", cypher);
     }
 
     /**
      * (8) For each targetID, count the number of actions with label = 1
+     * @return execution time in milliseconds
      */
-    private void labelOnePerTarget() {
+    private double labelOnePerTarget() {
         String cypher = """
             MATCH (:User)-[:ACTION {label: 1}]->(t:Course)
             RETURN t.id AS targetID, count(*) AS labelOneCount
@@ -187,13 +198,14 @@ public class GraphReader {
             LIMIT 10
             """;
 
-        executeAndPrint("Label=1 actions per target", cypher);
+        return executeAndPrint("Label=1 actions per target", cypher);
     }
 
     /**
      * Executes and prints the result of the given Cypher query.
+     * @return execution time in milliseconds
      */
-    private void executeAndPrint(String label, String cypher) {
+    private double executeAndPrint(String label, String cypher) {
         long start = System.nanoTime();
         try {
             Result result = session.run(cypher);
@@ -207,9 +219,11 @@ public class GraphReader {
                 }
                 System.out.println();
             }
+            return duration;
         } catch (Exception e) {
             System.err.printf("Error executing query '%s': %s\n", label, e.getMessage());
             logger.error("Error executing query '{}'", label, e);
+            return 0.0;
         }
     }
 

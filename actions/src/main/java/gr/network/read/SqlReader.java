@@ -35,8 +35,9 @@ public class SqlReader {
     /**
      * Executes the query specified by alias.
      * If queryName is null or empty, display menu and let user choose.
+     * @return execution time in milliseconds
      */
-    public void run(String queryName) {
+    public double run(String queryName) {
         if (queryName == null || queryName.isBlank()) {
             printAvailableQueries();
             System.out.print("Choose one query to run: ");
@@ -45,8 +46,9 @@ public class SqlReader {
 
         logger.info("Running SQL query '{}'.", queryName);
 
+        double totalTime = 0.0;
         switch (queryName.toLowerCase()) {
-            case "graphsize" -> graphSize();
+            case "graphsize" -> totalTime = graphSize();
             case "actionstargetsofuser" -> {
                 // take user input for the user id
                 String userId = "";
@@ -55,46 +57,51 @@ public class SqlReader {
                     userId = scanner.nextLine().trim();
                 } while (userId.isBlank());
 
-                actionsTargetsOfUser(userId);
+                totalTime = actionsTargetsOfUser(userId);
             }
-            case "actionsperuser" -> actionsPerUser();
-            case "toptargets" -> topTargets();
-            case "avgactions" -> avgActionsPerUser();
-            case "positivefeature2" -> userTargetWithPositiveFeature2();
-            case "label1pertarget" -> labelOnePerTarget();
+            case "actionsperuser" -> totalTime = actionsPerUser();
+            case "toptargets" -> totalTime = topTargets();
+            case "avgactions" -> totalTime = avgActionsPerUser();
+            case "positivefeature2" -> totalTime = userTargetWithPositiveFeature2();
+            case "label1pertarget" -> totalTime = labelOnePerTarget();
             default -> System.out.println("Unknown query: " + queryName);
         }
+        return totalTime;
     }
 
     /**
      * (2) Count of users, courses and actions
+     * @return total execution time in milliseconds
      */
-    private void graphSize() {
+    private double graphSize() {
         System.out.println("Database size counts");
         
         String userCountSql = "SELECT COUNT(DISTINCT userId) as userCount FROM Users";
         String courseCountSql = "SELECT COUNT(DISTINCT courseId) as courseCount FROM Courses";
         String actionCountSql = "SELECT COUNT(*) as actionCount FROM Actions";
 
-        executeAndPrint("Total Users Count", userCountSql);
-        executeAndPrint("Total Courses Count", courseCountSql);
-        executeAndPrint("Total Actions Count", actionCountSql);
+        double time1 = executeAndPrint("Total Users Count", userCountSql);
+        double time2 = executeAndPrint("Total Courses Count", courseCountSql);
+        double time3 = executeAndPrint("Total Actions Count", actionCountSql);
+        return time1 + time2 + time3;
     }
 
     /**
      * (3) All actions and targets of a user
+     * @return execution time in milliseconds
      */
-    private void actionsTargetsOfUser(String userID) {
+    private double actionsTargetsOfUser(String userID) {
         System.out.println("Actions and targets of user " + userID);
 
         String sql = "SELECT actionId, courseId as targetId FROM Actions WHERE userId = ? LIMIT 10";
-        executeAndPrint("Actions and Targets of user " + userID, sql, userID);
+        return executeAndPrint("Actions and Targets of user " + userID, sql, userID);
     }
 
     /**
      * (4) Action counts per user
+     * @return execution time in milliseconds
      */
-    private void actionsPerUser() {
+    private double actionsPerUser() {
         System.out.println("Action counts per user");
 
         String sql = """
@@ -105,13 +112,14 @@ public class SqlReader {
             LIMIT 10
             """;
 
-        executeAndPrint("Action Counts per User", sql);
+        return executeAndPrint("Action Counts per User", sql);
     }
 
     /**
      * (5) For each target, count how many users have done this target
+     * @return execution time in milliseconds
      */
-    private void topTargets() {
+    private double topTargets() {
         String sql = """
             SELECT courseId as targetId, COUNT(DISTINCT userId) as user_count
             FROM Actions 
@@ -120,13 +128,14 @@ public class SqlReader {
             LIMIT 10
             """;
 
-        executeAndPrint("Top targets by distinct users", sql);
+        return executeAndPrint("Top targets by distinct users", sql);
     }
 
     /**
      * (6) Count the average number of actions per user
+     * @return execution time in milliseconds
      */
-    private void avgActionsPerUser() {
+    private double avgActionsPerUser() {
         String sql = """
             SELECT AVG(action_count) as avg_actions_per_user
             FROM (
@@ -136,13 +145,14 @@ public class SqlReader {
             ) user_actions
             """;
 
-        executeAndPrint("Average actions per user", sql);
+        return executeAndPrint("Average actions per user", sql);
     }
 
     /**
      * (7) Show the userID and the targetID, if the action has positive Feature2
+     * @return execution time in milliseconds
      */
-    private void userTargetWithPositiveFeature2() {
+    private double userTargetWithPositiveFeature2() {
         String sql = """
             SELECT DISTINCT userId, courseId as targetId
             FROM Actions 
@@ -150,13 +160,14 @@ public class SqlReader {
             LIMIT 10
             """;
 
-        executeAndPrint("User/Target with Feature2 > 0", sql);
+        return executeAndPrint("User/Target with Feature2 > 0", sql);
     }
 
     /**
      * (8) For each targetID, count the actions with label "1"
+     * @return execution time in milliseconds
      */
-    private void labelOnePerTarget() {
+    private double labelOnePerTarget() {
         String sql = """
             SELECT courseId as targetId, COUNT(*) as label_1_count
             FROM Actions 
@@ -166,13 +177,14 @@ public class SqlReader {
             LIMIT 10
             """;
 
-        executeAndPrint("Label=1 actions per target", sql);
+        return executeAndPrint("Label=1 actions per target", sql);
     }
 
     /**
      * Executes and prints the result of the given SQL query.
+     * @return execution time in milliseconds
      */
-    private void executeAndPrint(String label, String sql, String... params) {
+    private double executeAndPrint(String label, String sql, String... params) {
         long start = System.nanoTime();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             // Set parameters if any
@@ -199,9 +211,11 @@ public class SqlReader {
                 }
                 System.out.println();
             }
+            return duration;
         } catch (SQLException e) {
             System.err.printf("Error executing SQL query '%s': %s\n", label, e.getMessage());
             logger.error("Error executing SQL query '{}'", label, e);
+            return 0.0;
         }
     }
 

@@ -51,35 +51,31 @@ public class QueryComparison {
         }
 
         System.out.println("\n--- NEO4J RESULTS ---");
-        long neo4jStart = System.nanoTime();
+        double neo4jMs;
         if (userId != null) {
             Scanner tempScanner = new Scanner(userId + "\n");
             GraphReader tempGraphReader = new GraphReader(neo4jConnection, tempScanner);
-            tempGraphReader.run(queryName);
+            neo4jMs = tempGraphReader.run(queryName);
         } else {
             GraphReader graphReader = new GraphReader(neo4jConnection, scanner);
-            graphReader.run(queryName);
+            neo4jMs = graphReader.run(queryName);
         }
-        long neo4jTime = System.nanoTime() - neo4jStart;
 
         System.out.println("\n--- SQLITE RESULTS ---");
-        long sqliteStart = System.nanoTime();
+        double sqliteMs;
         if (userId != null) {
             Scanner tempScanner = new Scanner(userId + "\n");
             SqlReader tempSqlReader = new SqlReader(sqliteConnection, tempScanner);
-            tempSqlReader.run(queryName);
+            sqliteMs = tempSqlReader.run(queryName);
         } else {
             SqlReader sqlReader = new SqlReader(sqliteConnection, scanner);
-            sqlReader.run(queryName);
+            sqliteMs = sqlReader.run(queryName);
         }
-        long sqliteTime = System.nanoTime() - sqliteStart;
 
         System.out.println("\n--- PERFORMANCE COMPARISON ---");
-        double neo4jMs = neo4jTime / 1_000_000.0;
-        double sqliteMs = sqliteTime / 1_000_000.0;
-        
         System.out.printf("Neo4j execution time:   %.2f ms\n", neo4jMs);
         System.out.printf("SQLite execution time:  %.2f ms\n", sqliteMs);
+        System.out.printf("Time difference:        %.2f ms\n", Math.abs(neo4jMs - sqliteMs));
         
         if (neo4jMs < sqliteMs) {
             System.out.printf("Neo4j is %.2fx faster\n", sqliteMs / neo4jMs);
