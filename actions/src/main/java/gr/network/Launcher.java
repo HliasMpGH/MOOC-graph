@@ -29,7 +29,7 @@ public class Launcher {
 
     private static boolean shouldQuery;
     private static String queryName;
-    
+
     private static boolean shouldCompare;
     private static boolean shouldRunSql;
 
@@ -144,11 +144,18 @@ public class Launcher {
                 } else if (args[0].equals("--sql")) {
                     shouldRunSql = true;
                     return true;
+                } else if (args[0].equals("--load")) {
+                    shouldLoad = true;
+                    return true;
+                } else if (args[0].equals("--query")) {
+                    shouldQuery = true;
+                    return true;
                 }
                 break;
             case 2:
                 if (args[0].equals("--load")) {
                     shouldLoad = true;
+                    fileName = args[1];
                     return true;
                 } else if (args[0].equals("--query")) {
                     shouldQuery = true;
@@ -207,7 +214,9 @@ public class Launcher {
                 --load : Load the graph from the default file (mooc_actions_merged.csv)
                 --load <path_to_csv_file> : Load the graph from the given file
                 --query <query_alias> : Query the graph with the given query alias
+                --query : Query the graph with the given query alias (interactive)
                 --sql <query_alias> : Run SQL queries only
+                --sql : Run SQL queries only (interactive)
                 --compare <query_alias> : Compare Neo4j vs SQLite performance for specific query
                 --compare : Compare Neo4j vs SQLite performance (interactive)
                 --load --query <query_name> : Load the graph and query it with the given query name

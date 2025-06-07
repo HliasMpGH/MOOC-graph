@@ -75,9 +75,9 @@ public class SqlReader {
      */
     private double graphSize() {
         System.out.println("Database size counts");
-        
-        String userCountSql = "SELECT COUNT(DISTINCT userId) as userCount FROM Users";
-        String courseCountSql = "SELECT COUNT(DISTINCT courseId) as courseCount FROM Courses";
+
+        String userCountSql = "SELECT COUNT(*) as userCount FROM Users";
+        String courseCountSql = "SELECT COUNT(*) as courseCount FROM Courses";
         String actionCountSql = "SELECT COUNT(*) as actionCount FROM Actions";
 
         double time1 = executeAndPrint("Total Users Count", userCountSql);
@@ -106,7 +106,7 @@ public class SqlReader {
 
         String sql = """
             SELECT userId, COUNT(*) as action_count
-            FROM Actions 
+            FROM Actions
             GROUP BY userId
             ORDER BY userId
             LIMIT 10
@@ -122,7 +122,7 @@ public class SqlReader {
     private double topTargets() {
         String sql = """
             SELECT courseId as targetId, COUNT(DISTINCT userId) as user_count
-            FROM Actions 
+            FROM Actions
             GROUP BY courseId
             ORDER BY user_count DESC
             LIMIT 10
@@ -140,7 +140,7 @@ public class SqlReader {
             SELECT AVG(action_count) as avg_actions_per_user
             FROM (
                 SELECT userId, COUNT(*) as action_count
-                FROM Actions 
+                FROM Actions
                 GROUP BY userId
             ) user_actions
             """;
@@ -155,7 +155,7 @@ public class SqlReader {
     private double userTargetWithPositiveFeature2() {
         String sql = """
             SELECT DISTINCT userId, courseId as targetId
-            FROM Actions 
+            FROM Actions
             WHERE feature2 > 0
             LIMIT 10
             """;
@@ -170,7 +170,7 @@ public class SqlReader {
     private double labelOnePerTarget() {
         String sql = """
             SELECT courseId as targetId, COUNT(*) as label_1_count
-            FROM Actions 
+            FROM Actions
             WHERE label = 1
             GROUP BY courseId
             ORDER BY label_1_count DESC
@@ -191,19 +191,19 @@ public class SqlReader {
             for (int i = 0; i < params.length; i++) {
                 stmt.setString(i + 1, params[i]);
             }
-            
+
             ResultSet result = stmt.executeQuery();
             double duration = (System.nanoTime() - start) / 1_000_000.0;
 
             System.out.printf("\n> %s (%.2f ms)\n", label, duration);
-            
+
             // Print column headers
             int columnCount = result.getMetaData().getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
                 System.out.print(result.getMetaData().getColumnName(i) + "\t");
             }
             System.out.println();
-            
+
             // Print results
             while (result.next()) {
                 for (int i = 1; i <= columnCount; i++) {
