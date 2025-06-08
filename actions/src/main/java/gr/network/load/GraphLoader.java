@@ -52,10 +52,9 @@ public class GraphLoader {
         logger.info("Loading graph...");
         loadNodes();
 
-        logger.info("Creating indexes...");
-        createIndexes();
-
         loadEdges();
+
+        createIndexes();
     }
 
     /**
@@ -166,6 +165,8 @@ public class GraphLoader {
      * Creates indexes to speed up future queries.
      */
     private void createIndexes() {
+        logger.info("Creating indexes...");
+
         var session = connection.getSession();
 
         // Create index for User(id)
