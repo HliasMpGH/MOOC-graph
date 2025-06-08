@@ -22,7 +22,7 @@ import gr.network.read.QueryComparison;
  */
 public class Launcher {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(GraphLoader.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(Launcher.class);
 
     private static boolean shouldLoad;
     private static String fileName;

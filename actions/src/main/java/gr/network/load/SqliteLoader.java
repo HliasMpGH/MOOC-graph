@@ -1,17 +1,8 @@
 package gr.network.load;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import gr.network.domain.Action;
@@ -41,7 +32,7 @@ public class SqliteLoader {
         try {
             // Create tables first
             createTables();
-            
+
             // insert users
             bulkInsertUsers(users);
 
@@ -72,13 +63,13 @@ public class SqliteLoader {
                 userId TEXT PRIMARY KEY
             )
             """;
-        
+
         String createCoursesTable = """
             CREATE TABLE IF NOT EXISTS Courses(
                 courseId TEXT PRIMARY KEY
             )
             """;
-        
+
         String createActionsTable = """
             CREATE TABLE IF NOT EXISTS Actions(
                 actionId TEXT PRIMARY KEY,
@@ -94,15 +85,15 @@ public class SqliteLoader {
                 FOREIGN KEY (courseId) REFERENCES Courses(courseId)
             )
             """;
-        
+
         try (var stmt1 = connection.prepareStatement(createUsersTable);
              var stmt2 = connection.prepareStatement(createCoursesTable);
              var stmt3 = connection.prepareStatement(createActionsTable)) {
-            
+
             stmt1.execute();
             stmt2.execute();
             stmt3.execute();
-            
+
             System.out.println("Tables created successfully");
         }
     }
