@@ -117,6 +117,7 @@ public class GraphReader {
             -[action:ACTION]->
             (course:Course)
             return action.action as actionId, course.id as courseID
+            ORDER BY actionId
             LIMIT 10
         """, userID);
 
@@ -180,6 +181,7 @@ public class GraphReader {
             MATCH (u:User)-[r:ACTION]->(t:Course)
             WHERE r.feature2 > 0
             RETURN DISTINCT u.id AS userID, t.id AS targetID
+            ORDER BY userID, targetID
             LIMIT 10
             """;
 

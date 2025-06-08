@@ -93,7 +93,12 @@ public class SqlReader {
     private double actionsTargetsOfUser(String userID) {
         System.out.println("Actions and targets of user " + userID);
 
-        String sql = "SELECT actionId, courseId as targetId FROM Actions WHERE userId = ? LIMIT 10";
+        String sql = """
+        SELECT actionId, courseId as targetId
+        FROM Actions WHERE userId = ?
+        ORDER BY actionId
+        LIMIT 10
+        """;
         return executeAndPrint("Actions and Targets of user " + userID, sql, userID);
     }
 
@@ -157,6 +162,7 @@ public class SqlReader {
             SELECT DISTINCT userId, courseId as targetId
             FROM Actions
             WHERE feature2 > 0
+            ORDER BY userId, targetId
             LIMIT 10
             """;
 
