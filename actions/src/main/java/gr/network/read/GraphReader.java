@@ -208,8 +208,8 @@ public class GraphReader {
      * @return execution time in milliseconds
      */
     private double executeAndPrint(String label, String cypher) {
-        long start = System.nanoTime();
         try {
+            long start = System.nanoTime();
             Result result = session.run(cypher);
             double duration = (System.nanoTime() - start) / 1_000_000.0;
 

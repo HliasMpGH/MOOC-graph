@@ -191,13 +191,13 @@ public class SqlReader {
      * @return execution time in milliseconds
      */
     private double executeAndPrint(String label, String sql, String... params) {
-        long start = System.nanoTime();
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             // Set parameters if any
             for (int i = 0; i < params.length; i++) {
                 stmt.setString(i + 1, params[i]);
             }
 
+            long start = System.nanoTime();
             ResultSet result = stmt.executeQuery();
             double duration = (System.nanoTime() - start) / 1_000_000.0;
 

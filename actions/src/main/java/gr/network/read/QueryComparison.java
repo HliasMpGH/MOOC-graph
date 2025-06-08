@@ -76,7 +76,7 @@ public class QueryComparison {
         System.out.printf("Neo4j execution time:   %.2f ms\n", neo4jMs);
         System.out.printf("SQLite execution time:  %.2f ms\n", sqliteMs);
         System.out.printf("Time difference:        %.2f ms\n", Math.abs(neo4jMs - sqliteMs));
-        
+
         if (neo4jMs < sqliteMs) {
             System.out.printf("Neo4j is %.2fx faster\n", sqliteMs / neo4jMs);
         } else if (sqliteMs < neo4jMs) {
@@ -84,7 +84,7 @@ public class QueryComparison {
         } else {
             System.out.println("Both databases performed equally");
         }
-        
+
         System.out.println("=".repeat(60));
     }
 
@@ -93,7 +93,7 @@ public class QueryComparison {
      */
     public void runAllComparisons() {
         String[] queries = {
-            "graphsize", 
+            "graphsize",
             "actionsperuser",
             "toptargets",
             "avgactions",
@@ -102,7 +102,7 @@ public class QueryComparison {
         };
 
         System.out.println("\nRunning complete performance comparison...\n");
-        
+
         for (String query : queries) {
             runComparison(query);
             System.out.println("\nPress Enter to continue to next query...");
@@ -139,10 +139,10 @@ public class QueryComparison {
         System.out.println("\n--- PERFORMANCE COMPARISON ---");
         double neo4jMs = neo4jTime / 1_000_000.0;
         double sqliteMs = sqliteTime / 1_000_000.0;
-        
+
         System.out.printf("Neo4j execution time:   %.2f ms\n", neo4jMs);
         System.out.printf("SQLite execution time:  %.2f ms\n", sqliteMs);
-        
+
         if (neo4jMs < sqliteMs) {
             System.out.printf("Neo4j is %.2fx faster\n", sqliteMs / neo4jMs);
         } else if (sqliteMs < neo4jMs) {
@@ -150,7 +150,7 @@ public class QueryComparison {
         } else {
             System.out.println("Both databases performed equally");
         }
-        
+
         System.out.println("=".repeat(60));
     }
 
