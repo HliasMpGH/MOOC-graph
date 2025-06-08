@@ -123,22 +123,16 @@ public class QueryComparison {
         System.out.println("=".repeat(60));
 
         System.out.println("\n--- NEO4J RESULTS ---");
-        long neo4jStart = System.nanoTime();
         Scanner tempScanner = new Scanner(userId + "\n");
         GraphReader tempGraphReader = new GraphReader(neo4jConnection, tempScanner);
-        tempGraphReader.run("actionstargetsofuser");
-        long neo4jTime = System.nanoTime() - neo4jStart;
+        double neo4jMs = tempGraphReader.run("actionstargetsofuser");
 
         System.out.println("\n--- SQLITE RESULTS ---");
-        long sqliteStart = System.nanoTime();
         Scanner tempSqlScanner = new Scanner(userId + "\n");
         SqlReader tempSqlReader = new SqlReader(sqliteConnection, tempSqlScanner);
-        tempSqlReader.run("actionstargetsofuser");
-        long sqliteTime = System.nanoTime() - sqliteStart;
+        double sqliteMs = tempSqlReader.run("actionstargetsofuser");
 
         System.out.println("\n--- PERFORMANCE COMPARISON ---");
-        double neo4jMs = neo4jTime / 1_000_000.0;
-        double sqliteMs = sqliteTime / 1_000_000.0;
 
         System.out.printf("Neo4j execution time:   %.2f ms\n", neo4jMs);
         System.out.printf("SQLite execution time:  %.2f ms\n", sqliteMs);
@@ -160,7 +154,7 @@ public class QueryComparison {
     private void printAvailableQueries() {
         System.out.println("""
             Available Queries for Comparison:
-            ───────────────────────────────
+            ---------------------------------
             graphsize         -> Count of users, courses and actions
             actionstargetsofuser -> Actions and targets of a user
             actionsperuser    -> Count of actions per user
@@ -168,7 +162,6 @@ public class QueryComparison {
             avgactions        -> Average number of actions per user
             positivefeature2  -> (userID, courseID) where feature2 > 0
             label1pertarget   -> Count of label=1 actions per course
-            all              -> Run all queries for complete comparison
         """);
     }
 }
