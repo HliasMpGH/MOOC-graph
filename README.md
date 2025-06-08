@@ -1,10 +1,20 @@
 # Graph Loader & Query Tool
 
-This Java application allows you to load a graph into Neo4j from a CSV file and execute predefined queries using command-line arguments.
+This Java application allows you to load a graph into Neo4j and SQLite from a CSV file and execute predefined queries using command-line arguments. The purpose of this tool is to measure performance between a relational and a graph database on the same queries.
+
+## Build
+```bash
+cd /actions
+
+mvn clean install
+```
+
+## Setup
+Set up a Neo4j DB on your local machine and provide its credentials in [`actions/.env.example`](actions/.env.example) and change its name to `actions/.env`
 
 ## Usage
 
-- `java -jar <jar_name>.jar <args>`
+- `java -jar graph-tool-jar-with-dependencies.jar <args>`
 
 ## Argument Options
 
@@ -46,3 +56,12 @@ Load the graph from a specified file and run performance comparison.
 
 - `[NO ARGS]`
 Run interactively and choose a query (includes comparison options).
+
+## Perform Complete Interactive Benchmarking
+
+```bash
+# Load the data in both the databases (SQLite & Neo4j) and execute on interactive mode
+java -jar graph-tool-jar-with-dependencies.jar --load
+```
+
+And choose option **9: compareall - Compare all queries performance (Neo4j vs SQLite)**
